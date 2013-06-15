@@ -8,5 +8,5 @@ import java.util.*;
  * Created: 6/14/13
  */
 public class BaseModelObject {
-	protected HashSet<String> hasBeenTouched = new HashSet<>();
+	HashSet<String> hasBeenTouched = new HashSet<>();
 }
