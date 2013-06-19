@@ -3,8 +3,6 @@ package com.phase3.businesslogic;
 import org.apache.log4j.*;
 import org.junit.*;
 
-import java.util.*;
-
 /**
  * Project: tiburon
  * User:    cgh
@@ -21,7 +19,7 @@ public class CustomerTest {
 	@Test
 	public void testGetAll() {
 		CustomerLogic logic = new CustomerLogic();
-		System.out.println(logic.getAll());
+		System.out.println(logic.getAll(context.getUriInfo().getPath()));
 	}
 //	@Test
 //	public void testGetOne() {

@@ -2,13 +2,6 @@ package com.phase3.js;
 
 import org.mozilla.javascript.*;
 
-/**
- * Arcus Service Framework
- * <p/>
- * User: cgh
- * Created: 6/14/13 9:29 PM
- * Copyright (c) 2012 IGT Inc.
- */
 public class ScriptEngine {
     private Scriptable scope;
 

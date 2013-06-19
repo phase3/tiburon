@@ -9,10 +9,12 @@ package com.phase3.rest;
 import com.phase3.businesslogic.*;
 import com.phase3.logic.*;
 import com.phase3.model.*;
+import org.apache.cxf.jaxrs.ext.*;
 import org.slf4j.*;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
+import java.util.*;
 
 @Path("/customers")
 public class CustomerEndpoint {
@@ -20,12 +22,18 @@ public class CustomerEndpoint {
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAll(@Context HttpHeaders headers, @Context SecurityContext securityContext) {
+	public Response getAll(@Context HttpHeaders headers, @Context MessageContext context, @Context SecurityContext securityContext) {
 		log.trace("customers [get]");
 		try {
 			Logic logic = LogicFactory.getLogic(securityContext, Customer.class);
-			String json = logic.getAll();
-			return Response.ok(json, MediaType.APPLICATION_JSON).build();
+			String json = logic.getAll(context.getUriInfo().getPath());
+
+            Response.ResponseBuilder response =  Response.ok(json, MediaType.APPLICATION_JSON);
+
+            // suggest client cache
+            response.expires(new Date(System.currentTimeMillis() + 3000));
+            return response.build();
+
 		} catch (Exception e) {
 			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
 			return Response.status(500).build();
@@ -35,11 +43,11 @@ public class CustomerEndpoint {
 	@GET
 	@Path("{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getOne(@Context HttpHeaders headers, @Context SecurityContext securityContext, @PathParam("id") String id) {
+	public Response getOne(@Context HttpHeaders headers, @Context MessageContext context, @Context SecurityContext securityContext, @PathParam("id") String id) {
 		log.trace("customers/"+id+" [get]");
 		try {
 			Logic logic = LogicFactory.getLogic(securityContext, Customer.class);
-			String json = logic.getOne(id);
+			String json = logic.getOne(context.getUriInfo().getPath(), id);
 			return Response.ok(json, MediaType.APPLICATION_JSON).build();
 		} catch (Exception e) {
 			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -49,11 +57,18 @@ public class CustomerEndpoint {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response create(@Context HttpHeaders headers, String content, @Context SecurityContext securityContext) {
-		log.trace("customers [update]");
+    /*
+    return:
+
+        201 Created
+        Location: http://customers/xyz
+
+     */
+	public Response create(@Context HttpHeaders headers, @Context MessageContext context, @Context SecurityContext securityContext, String content) {
+		log.trace("customers [create]");
 		try {
 			Logic logic = LogicFactory.getLogic(securityContext, Customer.class);
-			String json = logic.create(content);
+			String json = logic.create(context.getUriInfo().getPath(),content);
 			return Response.ok(json, MediaType.APPLICATION_JSON).build();
 		} catch (Exception e) {
 			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -63,11 +78,17 @@ public class CustomerEndpoint {
 	@Path("{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response update(@Context HttpHeaders headers, String content, @Context SecurityContext securityContext, @PathParam("id") String id) {
+    /*
+    return:
+
+        200 Ok
+
+     */
+	public Response update(@Context HttpHeaders headers,  @Context MessageContext context, @Context SecurityContext securityContext, String content,  @PathParam("id") String id) {
 		log.trace("customers/"+id+" [update]");
 		try {
 			Logic logic = LogicFactory.getLogic(securityContext, Customer.class);
-			String json = logic.update(id, content);
+			String json = logic.update(context.getUriInfo().getPath(),id, content);
 			return Response.ok(json, MediaType.APPLICATION_JSON).build();
 		} catch (Exception e) {
 			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

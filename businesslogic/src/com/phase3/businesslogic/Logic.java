@@ -18,10 +18,10 @@ public abstract class Logic {
 		factory = HibernateConfiguration.init("jdbc:mysql://localhost/tiburon","tib","tib");
 	}
 
-	public abstract String getAll();
-	public abstract String getOne(String id);
-	public abstract String create(String content);
-	public abstract String update(String id, String content);
+	public abstract String getAll(String path);
+	public abstract String getOne(String path, String id);
+	public abstract String create(String path, String content);
+	public abstract String update(String path, String id, String content);
 
 	public void setPrincipal(Principal principal) {
 		this.principal = principal;

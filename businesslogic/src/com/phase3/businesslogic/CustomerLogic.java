@@ -1,11 +1,11 @@
 package com.phase3.businesslogic;
 
+import com.phase3.businesslogic.cache.*;
 import com.phase3.jsonbind.*;
 import com.phase3.model.*;
 import org.hibernate.*;
 import org.slf4j.*;
 
-import java.lang.reflect.*;
 import java.util.*;
 
 /**
@@ -21,36 +21,47 @@ public class CustomerLogic extends Logic {
 		super();
 	}
 
-	public String getAll() {
-		// get all customers
-		Session session = factory.openSession();
-		Criteria search = session.createCriteria(Customer.class);
-		List<Customer> list  = search.list();
+	public String getAll(String path) {
+        String json = CacheService.getCache().getCached(path);
+        if (json == null) {
+            // get all customers
+            Session session = factory.openSession();
+            Criteria search = session.createCriteria(Customer.class);
+            List<Customer> list  = search.list();
+            try {
+                json = mapper.serializeListAsString(list);
+                CacheService.getCache().cache(path, json);
+            } catch (Exception e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                return null;
+            } finally {
+                session.close();
+            }
+        }
+        return json;
+	}
+	public String getOne(String path, String id) {
+        String json = CacheService.getCache().getCached(path);
+        if (json == null) {
+            //get a single customer based on id
+            Session session = factory.openSession();
+            Object o = session.get(Customer.class, new Long(id));
+            try {
+                json =  mapper.serializeAsString(o);
+                CacheService.getCache().cache(path, json);
+            } catch (Exception e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                return null;
+            } finally {
+                session.close();
+            }
+        }
+        return json;
+	}
+	public String create (String path, String content) {
+        CacheService.getCache().invalidate(path);
 
-		try {
-			return mapper.serializeListAsString(list);
-		} catch (Exception e) {
-			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-			return null;
-		} finally {
-			session.close();
-		}
-	}
-	public String getOne(String id) {
-		//get a single customer based on id
-		Session session = factory.openSession();
-		Object o = session.get(Customer.class, new Long(id));
-		try {
-			return mapper.serializeAsString(o);
-		} catch (Exception e) {
-			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-			return null;
-		} finally {
-			session.close();
-		}
-	}
-	public String create (String content) {
-		// create a new customer
+        // create a new customer
 		Session session = factory.openSession();
 		Transaction t = session.beginTransaction();
 		try {
@@ -66,7 +77,10 @@ public class CustomerLogic extends Logic {
 			session.close();
 		}
 	}
-	public String update(String id, String content) {
+	public String update(String path, String id, String content) {
+        CacheService.getCache().invalidate(path); // path: /customers/{id}
+        CacheService.getCache().invalidate(path.substring(0,path.lastIndexOf("/")-1)); // path: /customers
+
 		// update a customer
 		Session session = factory.openSession();
 		Transaction t = session.beginTransaction();

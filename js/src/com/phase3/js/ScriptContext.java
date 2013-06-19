@@ -1,12 +1,5 @@
 package com.phase3.js;
 
-/**
- * Arcus Service Framework
- * <p/>
- * User: cgh
- * Created: 6/14/13 9:30 PM
- * Copyright (c) 2012 IGT Inc.
- */
 public class ScriptContext {
     private Object instanceObject;
     private String name;

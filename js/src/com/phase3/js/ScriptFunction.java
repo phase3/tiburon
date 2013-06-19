@@ -4,13 +4,6 @@ import org.mozilla.javascript.*;
 
 import java.lang.reflect.*;
 
-/**
- * Arcus Service Framework
- * <p/>
- * User: cgh
- * Created: 6/14/13 9:34 PM
- * Copyright (c) 2012 IGT Inc.
- */
 public class ScriptFunction {
     private Member classMethod;
     private String name;

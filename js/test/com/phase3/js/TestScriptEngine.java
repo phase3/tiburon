@@ -3,13 +3,6 @@ package com.phase3.js;
 import org.junit.*;
 import org.mozilla.javascript.*;
 
-/**
- * Arcus Service Framework
- * <p/>
- * User: cgh
- * Created: 6/14/13 9:49 PM
- * Copyright (c) 2012 IGT Inc.
- */
 public class TestScriptEngine {
     @Test
     public void testScript() throws NoSuchMethodException {
