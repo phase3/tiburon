@@ -1,0 +1,12 @@
+
+Notes:
+Versioning in URI
+
+DateTime format ISO 8601, UTC!
+
+POST:
+	return response body, can override with ?body=false
+
+GET ALL:
+	Pagination: 	offset=, limit=
+	body response contains min,max

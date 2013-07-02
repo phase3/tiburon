@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="velocity:velocity:1.4" type="repository">
+    <properties maven-id="velocity:velocity:1.4" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/velocity-1.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/velocity-dep-1.4.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

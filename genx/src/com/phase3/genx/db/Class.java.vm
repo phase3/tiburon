@@ -1,0 +1,176 @@
+package ${package};
+
+import javax.persistence.*;
+import java.util.*;
+import java.util.Date;
+import java.sql.*;
+import java.math.*;
+import java.io.*;
+import persistence.model.*;
+import org.hibernate.lob.*;
+
+/**
+		Copyright (c) 2009, Phase3 Software.
+*/
+@Entity
+@Table(name = "${table.getTableName()}")
+#if (${vendor.equals("mysql")})
+@TableGenerator(name="${table.getTableName()}_gen", table="SEQ_SEQUENCE", pkColumnName="SEQ_TABLE", pkColumnValue="${table.getTableName()}", valueColumnName="SEQ_VALUE", allocationSize=50) 	
+#else
+#if (${table.isSequenceTable()})
+@SequenceGenerator(name="${table.getTableName()}_seq", sequenceName="${table.getTableName().substring(0,3)}_sequence")
+#end
+#end
+@org.hibernate.annotations.BatchSize(size = 100)
+public class ${className} extends Record {
+
+	public void touch() {
+#if(${className.equals("Sequence")})
+		// no action
+#else
+		if(createDate != null) {
+			//managed by the version field if active
+#if(${className.equals("Case")} || ${className.equals("Asset")} || ${className.equals("Customer")} || ${className.equals("Tower")} || ${className.equals("AssetTemplate")})
+			//updateDate = new Date();
+#else
+			updateDate = new Date();
+#end
+		} else {
+			createDate = new Date();
+		}
+#end
+	}
+
+
+#foreach ($column in ${table.getColumns()})
+#if(${column.isVersionField()})
+#if(${className.equals("Case")} || ${className.equals("Asset")} || ${className.equals("Customer")} || ${className.equals("Tower")} || ${className.equals("AssetTemplate")})
+	@Version
+#end
+#end
+#if (${column.isPk()})
+	@Id
+#if (${column.isSequencePk()})
+#if (${vendor.equals("mysql")})
+	@GeneratedValue(strategy=GenerationType.TABLE, generator="${table.getTableName()}_gen")
+#else
+	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="${table.getTableName()}_seq")
+#end
+#end
+#end
+#if (${column.hasFkColumn()})
+	//FOREIGN-KEY
+	@ManyToOne(optional = ${column.isNullable()})
+	@JoinColumn(name = "${column.getName()}", nullable = ${column.isNullable()})
+	${column.getFkTable().getClassName()} ${column.getFieldName()};
+#else
+	@Column(name="${column.getName()}", nullable=${column.isNullable()}#if(${column.getClassType().equals("String")}),length=${column.getSize()}#end)
+	${column.getClassType()} ${column.getFieldName()};
+#end
+
+#end
+#foreach ($column in ${table.getReferringColumnList()})
+	//REVERSE-FOREIGN-KEY: ${column.getTable().getTableName()}.${column.getName()};
+	@OneToMany(mappedBy = "${column.getFieldName()}")
+	List<${column.getTable().getClassName()}> ${column.getFieldName()}${column.getTable().getClassName()}List = new ArrayList<${column.getTable().getClassName()}>();
+
+#end
+
+#foreach ($column in ${table.getColumns()})
+#if (${column.hasFkColumn()})
+	/**
+		@js-api
+	*/
+	public ${column.getFkTable().getClassName()} get${column.getMethodFieldName()}() {
+		return this.${column.getFieldName()};
+	}
+	/**
+		@js-api
+	*/
+	public void set${column.getMethodFieldName()}(${column.getFkTable().getClassName()} ${column.getFieldName()}) {
+		this.${column.getFieldName()} = ${column.getFieldName()};
+	}
+#else
+#if($column.getClassType() == "Clob")
+	private transient String ${column.getFieldName()}String = null;
+	/**
+		@js-api
+	*/
+	public void set${column.getMethodFieldName()}(String ${column.getFieldName()}) {
+		this.${column.getFieldName()} = new ClobImpl(${column.getFieldName()}==null?"":${column.getFieldName()});
+		${column.getFieldName()}String = null;
+	}
+	/**
+		@js-api
+	*/
+	public String get${column.getMethodFieldName()}() {
+		if (this.${column.getFieldName()}==null) {
+			return null;
+		}
+		if (${column.getFieldName()}String == null) {
+			StringBuffer sb = new StringBuffer();
+			Reader reader = null;
+			try {
+				reader = ${column.getFieldName()}.getCharacterStream();
+				int chr = reader.read();
+				while(chr != -1) {
+					sb.append((char)chr);
+					chr = reader.read();
+				}
+				${column.getFieldName()}String = sb.toString();
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+			}
+		}
+		return ${column.getFieldName()}String;
+	}
+#else
+	/**
+		@js-api
+	*/
+	public void set${column.getMethodFieldName()}(${column.getClassType()} ${column.getFieldName()}) {
+		this.${column.getFieldName()} = ${column.getFieldName()};
+	}
+	/**
+		@js-api
+	*/
+	public ${column.getClassType()} get${column.getMethodFieldName()}() {
+		return this.${column.getFieldName()};
+	}
+#end
+#end
+
+#end
+
+#foreach ($column in ${table.getReferringColumnList()})
+	/**
+		@js-api
+	*/
+	public List<${column.getTable().getClassName()}> get${column.getMethodFieldName()}${column.getTable().getClassName()}List () {
+		return this.${column.getFieldName()}${column.getTable().getClassName()}List;
+	}
+	/**
+		@js-api
+	*/
+	public void set${column.getMethodFieldName()}${column.getTable().getClassName()}List (List<${column.getTable().getClassName()}> list) {
+		this.${column.getFieldName()}${column.getTable().getClassName()}List = list;
+	}
+	/**
+		@js-api
+	*/
+	public void add${column.getMethodFieldName()}${column.getTable().getClassName()} (${column.getTable().getClassName()} item) {
+		this.${column.getFieldName()}${column.getTable().getClassName()}List.add(item);
+	}
+#end
+
+	public void fill(ResultSet rs) throws Exception {
+#foreach ($column in ${table.getColumns()})
+#if (${column.hasFkColumn()})
+		// this.${column.getFieldName()} = ${column.buildJdbcGetter("rs")};
+#else
+		this.${column.getFieldName()} = ${column.buildJdbcGetter("rs")};
+#end
+#end
+	}
+}
